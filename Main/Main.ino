@@ -1,51 +1,51 @@
 /*
  * ============================================================
- * nRF24L01 Receiver – Arduino Uno
- * Lib : RF24 by TMRh20
+ * nRF24L01 + Motor Controller Main Receiver
+ * Board: ESP32
  * ============================================================
- *
- * nRF24L01 wiring for Arduino Uno:
- * ┌─────────────┬────────────┐
- * │ nRF24 pin   │ Uno pin    │
- * ├─────────────┼────────────┤
- * │ VCC         │ 3.3 V      │
- * │ GND         │ GND        │
- * │ CE          │ Pin 7      │
- * │ CSN         │ Pin 8      │
- * │ SCK         │ Pin 13     │
- * │ MOSI        │ Pin 11     │
- * │ MISO        │ Pin 12     │
- * └─────────────┴────────────┘
  */
 
 #include "NRF_Module.h"
+#include "Motor_Module.h"
 
-#define NRF_CE_PIN  7
-#define NRF_CSN_PIN 8
+#define NRF_CE_PIN  4
+#define NRF_CSN_PIN 5
+
+const uint32_t SIGNAL_TIMEOUT_MS = 500;
+uint32_t lastSignalTime = 0;
 
 void setup() {
-  Serial.begin(9600);   // Uno works best at 9600
-  Serial.println("nRF24 Receiver starting...");
+  Serial.begin(115200); 
+  Serial.println("[BOOT] ESP32 Receiver starting...");
 
-  // Initialize the radio using our procedural function
+  initMotors();
+  Serial.println("[MOTORS] Initialized.");
+
   if (!initRadio(NRF_CE_PIN, NRF_CSN_PIN)) {
-    Serial.println("ERROR: nRF24L01 not found! Check wiring.");
+    Serial.println("[ERROR] nRF24L01 not found! Check wiring.");
     while (true) delay(1000);
   }
+  Serial.println("[NRF] Listening for data...");
 
-  Serial.println("Listening for data...");
-  Serial.println("   LX      LY");
-  Serial.println("-------  -------");
+  lastSignalTime = millis();
 }
 
 void loop() {
   AnalogPayload payload;
 
-  // Pass the payload struct instance by reference to be updated
   if (checkRadioData(payload)) {
-    Serial.print("LX=");
-    Serial.print(payload.lx);
-    Serial.print("   LY=");
-    Serial.println(payload.ly);
+    lastSignalTime = millis();
+
+    Serial.printf("LX=%4d   LY=%4d\n", payload.lx, payload.ly);
+
+    int forwardSpeed = -payload.ly; 
+    int turnSpeed = payload.lx;
+
+    drive(forwardSpeed, turnSpeed);
+  }
+
+  // Failsafe action
+  if (millis() - lastSignalTime > SIGNAL_TIMEOUT_MS) {
+    stopAll();
   }
 }
