@@ -37,7 +37,7 @@ void setup() {
 
   Serial.println("[NRF] Radio initialised.");
 
-  ps5.begin("1a:2b:3c:01:01:01");   // <-- replace with your controller's MAC
+  ps5.begin("E8:47:3A:45:C1:41");   //E8473A45C141
   Serial.println("[PS5] Waiting for controller…");
 }
 

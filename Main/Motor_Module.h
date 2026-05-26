@@ -13,7 +13,7 @@
 #define CH_RIGHT 0
 #define CH_LEFT 1
 
-#define DEADZONE 15
+#define DEADZONE 7
 #define MAX_SPEED 220
 
 void initMotors();

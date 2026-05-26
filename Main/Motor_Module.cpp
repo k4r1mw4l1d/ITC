@@ -1,4 +1,5 @@
-#include "Motor_Module.h"x`
+#include "Motor_Module.h"
+#include <Arduino.h>
 
 void setMotor(uint8_t dirPin, uint8_t pwmCh, int speed) {
   speed = constrain(speed, -MAX_SPEED, MAX_SPEED);
